@@ -13,6 +13,74 @@
   const TLD = ".co.zw";
   let lookupController = null;
   let lookupSequence = 0;
+  let lastDrawerOpener = null;
+
+  const ISP_MEMBERS = [
+    { name: "Africom Zimbabwe" },
+    { name: "Clay Bytes Solutions" },
+    { name: "Econet Wireless", href: "http://www.econet.co.zw" },
+    { name: "FBNet" },
+    { name: "Frampol" },
+    { name: "Liquid Telecom", href: "http://zimbabwe.liquidtelecom.com" },
+    { name: "Powertel", href: "http://powertel.co.zw" },
+    { name: "SADACNET" },
+    { name: "Telco", href: "http://www.telco.co.zw/newtelco" },
+    { name: "Telecel", href: "http://www.telecel.co.zw" },
+    { name: "Utande" },
+    { name: "ZARNet" },
+    { name: "ZODSAT" },
+    { name: "ZOL Zimbabwe" }
+  ];
+
+  const SERVICE_MEMBERS = [
+    { name: "Advert Guru" },
+    { name: "Afrohost" },
+    { name: "Akoiweb" },
+    { name: "Angel&Walt" },
+    { name: "Atomistic Solutions" },
+    { name: "Castellum Integrated Systems" },
+    { name: "Centric Data" },
+    { name: "Cloud Plus Africa" },
+    { name: "Credible Brands" },
+    { name: "Cyberplex Africa" },
+    { name: "Design@7" },
+    { name: "Ecowebzim" },
+    { name: "Ehost", href: "https://ehost.co.zw" },
+    { name: "Freshspot" },
+    { name: "GetHost Web Hosting" },
+    { name: "Hansole Investments" },
+    { name: "Hectic Interweb Magic" },
+    { name: "Innovate Hosting", href: "https://innovatehosting.co.zw" },
+    { name: "Internet Solutions Africa" },
+    { name: "JBK Web Hosting" },
+    { name: "JomeTech Africa" },
+    { name: "Mango Email Service" },
+    { name: "Marketing By Weber" },
+    { name: "Marmasco Technologies" },
+    { name: "Myzimhost" },
+    { name: "Neolab Technology" },
+    { name: "NivaCity" },
+    { name: "Pnrhost" },
+    { name: "Real Digital Systems" },
+    { name: "Skylinepromo" },
+    { name: "Starnet" },
+    { name: "Status Hi-Tech" },
+    { name: "Tapali Technologies" },
+    { name: "Terrific Tech" },
+    { name: "The Source" },
+    { name: "Tremhost" },
+    { name: "uHostAfrica" },
+    { name: "Vertico Solutions" },
+    { name: "Web Enchanter" },
+    { name: "Webdev" },
+    { name: "Webzim", href: "https://webzim.co.zw" },
+    { name: "Wehost", href: "https://wehost.co.zw" },
+    { name: "Zimbabwe Center for High Performance Computing" },
+    { name: "Zimbiz Network" },
+    { name: "ZHD Consulting" },
+    { name: "Zimhero web solutions" },
+    { name: "Zimhosts" }
+  ];
 
   const CONTENT = {
     org: "Zimbabwe Internet Service Providers Association",
@@ -27,16 +95,16 @@
       { label: "AGM", href: "#agm" }
     ],
     quickLinks: [
-      { label: "What is a domain name?", href: "#domain-guide", icon: "help" },
-      { label: "Domain registration guide", href: "#domain-guide", icon: "book" },
-      { label: "Policies & requirements", href: "#policies", icon: "shield" }
+      { label: "What is a domain name?", drawer: "domain-name", icon: "help" },
+      { label: "Domain registration guide", drawer: "registration-guide", icon: "book" },
+      { label: "Policies & requirements", drawer: "policies", icon: "shield" }
     ],
     actions: [
       {
         title: "Register a domain",
         body: "Search and register your .co.zw domain name.",
         cta: "Start registration",
-        href: "#domain-guide",
+        drawer: "registration-guide",
         icon: "globe",
         tone: "green"
       },
@@ -44,7 +112,7 @@
         title: "Find a registrar",
         body: "ZISPA registrars and members across Zimbabwe.",
         cta: "View members",
-        href: "#members",
+        drawer: "members",
         icon: "users",
         tone: "gold"
       },
@@ -52,7 +120,7 @@
         title: "Registry policies",
         body: "Review policies, requirements and dispute information.",
         cta: "View policies",
-        href: "#policies",
+        drawer: "policies",
         icon: "shield",
         tone: "red"
       },
@@ -60,43 +128,229 @@
         title: "ZINX peering",
         body: "Information for ISPs about ZINX and peering.",
         cta: "About ZINX",
-        href: "#zinx",
+        drawer: "zinx",
         icon: "network",
         tone: "green"
       }
     ],
     domainGuide: [
-      "What is a domain name?",
-      "Benefits of registering a domain name",
-      "Choosing a domain name",
-      "Domain name registration procedure",
-      "Submission requirements for registrars"
+      { label: "What is a domain name?", drawer: "domain-name" },
+      { label: "Benefits of registering a domain name", drawer: "domain-name" },
+      { label: "Choosing a domain name", drawer: "registration-guide" },
+      { label: "Domain name registration procedure", drawer: "registration-guide" },
+      { label: "Submission requirements for registrars", drawer: "registration-guide" }
     ],
     policies: [
-      "Processing of applications",
-      "ZISPA registration policies",
-      "Registration fees",
-      "Domain name disputes",
-      "Whois service"
+      { label: "Processing of applications", drawer: "processing" },
+      { label: "ZISPA registration policies", drawer: "policies" },
+      { label: "Registration fees", drawer: "fees" },
+      { label: "Domain name disputes", drawer: "disputes" },
+      { label: "Whois service", drawer: "whois" }
     ],
-    ispMembers: [
-      { name: "Econet Wireless", href: "http://www.econet.co.zw" },
-      { name: "Liquid Telecom", href: "http://zimbabwe.liquidtelecom.com" },
-      { name: "Telecel", href: "http://www.telecel.co.zw" },
-      { name: "Telco", href: "http://www.telco.co.zw/newtelco" },
-      { name: "Powertel", href: "http://powertel.co.zw" }
-    ],
-    serviceMembers: [
-      { name: "Wehost", href: "https://wehost.co.zw" },
-      { name: "Webzim", href: "https://webzim.co.zw" },
-      { name: "Innovate Hosting", href: "https://innovatehosting.co.zw" },
-      { name: "Ehost", href: "https://ehost.co.zw" }
-    ],
+    ispMembers: ISP_MEMBERS.filter((member) => member.href).slice(0, 5),
+    serviceMembers: SERVICE_MEMBERS.filter((member) => member.href).slice(0, 4),
+    allIspMembers: ISP_MEMBERS,
+    allServiceMembers: SERVICE_MEMBERS,
     contact: {
       admin: "admin@zispa.org.zw",
       whatsapp: "+263 772 782208",
       registry: "registry-accounts@mango.zw",
       tel: "+263 08677 190909"
+    },
+    drawerTopics: {
+      "domain-name": {
+        eyebrow: "Domain basics",
+        title: "What is a domain name?",
+        intro:
+          "A domain name is the human-readable address people use to find a website or service online.",
+        sections: [
+          {
+            heading: "How .co.zw works",
+            body:
+              "ZISPA manages the .co.zw namespace. The operational records for each domain are maintained through the registrant's registrar or DNS hosting provider."
+          },
+          {
+            heading: "Why register one",
+            items: [
+              "Use a Zimbabwe-specific web and email identity.",
+              "Keep your organisation's public address easier to remember.",
+              "Separate the domain owner from the hosting provider so services can move later."
+            ]
+          }
+        ]
+      },
+      "registration-guide": {
+        eyebrow: "Registration guide",
+        title: "Domain registration procedure",
+        intro:
+          "Registrants should work through a ZISPA member or registrar for new registrations, changes, transfers and deletions.",
+        sections: [
+          {
+            heading: "Before submitting",
+            items: [
+              "Choose a .co.zw name that accurately represents the registrant.",
+              "Prepare accurate owner details and the required identity or certificate information.",
+              "Confirm the domain has two to four unique authoritative name servers."
+            ]
+          },
+          {
+            heading: "Submission route",
+            items: [
+              "A registrar sends the completed .co.zw registration template to admin@zispa.org.zw.",
+              "New registrations require a signed letter accepting ZISPA terms and conditions.",
+              "Transfers, modifications and deletions should also be routed through the registrar."
+            ]
+          }
+        ]
+      },
+      processing: {
+        eyebrow: "Registry operations",
+        title: "Processing of applications",
+        intro:
+          "ZISPA aims to process complete domain requests within one working day.",
+        sections: [
+          {
+            heading: "Registry checks",
+            items: [
+              "Requested action, owner details and registrar details are checked for completeness.",
+              "Applications are assessed against ZISPA policies and POTRAZ requirements.",
+              "Name servers, SOA records, serial numbers and release letters are checked where relevant."
+            ]
+          }
+        ]
+      },
+      policies: {
+        eyebrow: "Registry policy",
+        title: "Policies & requirements",
+        intro:
+          "ZISPA registration policy is designed to keep .co.zw ownership records accurate and accountable.",
+        sections: [
+          {
+            heading: "Registrant details",
+            items: [
+              "POTRAZ requires accurate owner details for registered domains.",
+              "Registrants must provide a national ID, company certificate or equivalent identifying document.",
+              "ZISPA vets applications and may object where details or rights are unclear."
+            ]
+          },
+          {
+            heading: "Terms and conditions",
+            body:
+              "Applications are subject to ZISPA's standard terms and conditions, including requirements around truthful information and appropriate use of the namespace."
+          }
+        ]
+      },
+      terms: {
+        eyebrow: "Registry terms",
+        title: "Terms & Conditions",
+        intro:
+          "Domain registrations are subject to ZISPA's standard terms and conditions.",
+        sections: [
+          {
+            heading: "Registrant responsibility",
+            items: [
+              "Registration details must be accurate and complete.",
+              "Applicants must accept the registry terms before a new domain is registered.",
+              "Changes, transfers and deletions should be handled through the registrant's registrar."
+            ]
+          }
+        ]
+      },
+      privacy: {
+        eyebrow: "Registry privacy",
+        title: "Privacy Policy",
+        intro:
+          "ZISPA's old site does not expose a public online whois lookup. Registry information requests are handled directly by the registry team.",
+        sections: [
+          {
+            heading: "Registry information",
+            items: [
+              "Owner details are collected for domain registration and regulatory requirements.",
+              "Whois-related requests should be sent to admin@zispa.org.zw.",
+              "Requests should include enough context for the registry team to assess the enquiry."
+            ]
+          }
+        ]
+      },
+      fees: {
+        eyebrow: "Registry fees",
+        title: "Registration fees",
+        sections: [
+          {
+            heading: "Non-member registrar fees",
+            items: [
+              "USD 35 per domain registration.",
+              "USD 35 per domain renewal.",
+              "No charge for standard modifications."
+            ]
+          }
+        ]
+      },
+      disputes: {
+        eyebrow: "Registry policy",
+        title: "Domain name disputes",
+        intro:
+          "ZISPA is not the arbiter of domain name disputes, but can provide registry information where there is evidence of a rights issue.",
+        sections: [
+          {
+            heading: "Rights concerns",
+            items: [
+              "Cyber-squatting objections should include evidence of the rights being infringed.",
+              "ZISPA may provide applicant information where a legitimate rights violation is shown.",
+              "Disputes remain subject to the applicable legal and regulatory process."
+            ]
+          }
+        ]
+      },
+      whois: {
+        eyebrow: "Registry support",
+        title: "Whois service",
+        intro:
+          "The old ZISPA site does not provide a public online whois search.",
+        sections: [
+          {
+            heading: "Requesting information",
+            body:
+              "Whois-related requests should be sent to admin@zispa.org.zw with enough detail for the registry team to identify the domain and request context."
+          }
+        ]
+      },
+      members: {
+        eyebrow: "Member directory",
+        title: "ZISPA members",
+        intro:
+          "ZISPA members include Internet Service Providers, web hosts, IT consulting companies and related service organisations.",
+        memberGroups: [
+          { heading: "Internet Service Providers", members: ISP_MEMBERS },
+          { heading: "IT Consulting, Web & Hosting", members: SERVICE_MEMBERS }
+        ]
+      },
+      "isp-members": {
+        eyebrow: "Member directory",
+        title: "Internet Service Provider members",
+        memberGroups: [{ heading: "Internet Service Providers", members: ISP_MEMBERS }]
+      },
+      "service-members": {
+        eyebrow: "Member directory",
+        title: "IT Consulting, Web & Hosting members",
+        memberGroups: [{ heading: "IT Consulting, Web & Hosting", members: SERVICE_MEMBERS }]
+      },
+      zinx: {
+        eyebrow: "Zimbabwe Internet Exchange",
+        title: "About ZINX",
+        intro:
+          "ZISPA operates the Zimbabwe Internet Exchange so local Internet Service Providers can exchange traffic directly.",
+        sections: [
+          {
+            heading: "Peering",
+            items: [
+              "ZINX keeps eligible local traffic within Zimbabwe where peers are connected.",
+              "The exchange supports direct interconnection between participating ISPs.",
+              "Membership or peering enquiries should be sent to admin@zispa.org.zw."
+            ]
+          }
+        ]
+      }
     }
   };
 
@@ -115,6 +369,8 @@
       '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
     clipboard:
       '<path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 4h6v4H9z"/><path d="M8 12h8"/><path d="M8 16h5"/>',
+    close:
+      '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
     globe:
       '<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.4 2.5 3.6 5.5 3.6 9S14.4 18.5 12 21"/><path d="M12 3C9.6 5.5 8.4 8.5 8.4 12s1.2 6.5 3.6 9"/>',
     help:
@@ -150,10 +406,10 @@
     return CONTENT.quickLinks
       .map(
         (item) => `
-          <a href="${esc(item.href)}">
+          <button type="button" data-drawer="${esc(item.drawer)}">
             ${icon(item.icon)}
             <span>${esc(item.label)}</span>
-          </a>
+          </button>
         `
       )
       .join("");
@@ -168,10 +424,10 @@
             <div>
               <h2>${esc(item.title)}</h2>
               <p>${esc(item.body)}</p>
-              <a href="${esc(item.href)}">
+              <button class="ss-action-link" type="button" data-drawer="${esc(item.drawer)}">
                 <span>${esc(item.cta)}</span>
                 ${icon("chevron")}
-              </a>
+              </button>
             </div>
           </article>
         `
@@ -188,8 +444,63 @@
       .join("");
   }
 
-  function textList(items) {
-    return items.map((item) => `<li>${icon("check")}<span>${esc(item)}</span></li>`).join("");
+  function detailList(items) {
+    return items
+      .map(
+        (item) => `
+          <li>
+            ${icon("check")}
+            <button class="ss-detail-trigger" type="button" data-drawer="${esc(item.drawer)}">
+              ${esc(item.label)}
+            </button>
+          </li>
+        `
+      )
+      .join("");
+  }
+
+  function drawerSections(sections = []) {
+    return sections
+      .map((section) => {
+        const body = section.body ? `<p>${esc(section.body)}</p>` : "";
+        const items = Array.isArray(section.items)
+          ? `<ul>${section.items.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`
+          : "";
+        return `
+          <section class="ss-drawer-section">
+            <h3>${esc(section.heading)}</h3>
+            ${body}
+            ${items}
+          </section>
+        `;
+      })
+      .join("");
+  }
+
+  function drawerMemberGroups(groups = []) {
+    return groups
+      .map(
+        (group) => `
+          <section class="ss-drawer-section">
+            <h3>${esc(group.heading)}</h3>
+            <div class="ss-member-directory">
+              ${group.members
+                .map((member) =>
+                  member.href
+                    ? `<a href="${esc(member.href)}" target="_blank" rel="noreferrer">${esc(member.name)}</a>`
+                    : `<span>${esc(member.name)}</span>`
+                )
+                .join("")}
+            </div>
+          </section>
+        `
+      )
+      .join("");
+  }
+
+  function drawerBody(topic) {
+    const intro = topic.intro ? `<p class="ss-drawer-intro">${esc(topic.intro)}</p>` : "";
+    return `${intro}${drawerSections(topic.sections)}${drawerMemberGroups(topic.memberGroups)}`;
   }
 
   function mapGraphic() {
@@ -287,12 +598,12 @@
               <article>
                 <h3>Internet Service Providers</h3>
                 <div class="ss-member-row">${memberLinks(c.ispMembers)}</div>
-                <a class="ss-text-link" href="#members">View all ISP members ${icon("chevron")}</a>
+                <button class="ss-text-link" type="button" data-drawer="isp-members">View all ISP members ${icon("chevron")}</button>
               </article>
               <article>
                 <h3>IT Consulting, Web & Hosting</h3>
                 <div class="ss-member-row">${memberLinks(c.serviceMembers)}</div>
-                <a class="ss-text-link" href="#members">View all service members ${icon("chevron")}</a>
+                <button class="ss-text-link" type="button" data-drawer="service-members">View all service members ${icon("chevron")}</button>
               </article>
             </div>
           </div>
@@ -311,7 +622,7 @@
               ${icon("shield")}
               <strong>Trusted registry</strong>
               <p>Managed in accordance with ZISPA policies and POTRAZ regulations.</p>
-              <a class="ss-text-link" href="#domain-guide">Learn more ${icon("chevron")}</a>
+              <button class="ss-text-link" type="button" data-drawer="policies">Learn more ${icon("chevron")}</button>
             </div>
           </aside>
         </section>
@@ -320,12 +631,12 @@
           <article>
             <h2>Domain registration guidance</h2>
             <p>CO.ZW domain names may be registered through a ZISPA member, including local ISPs and web-related organisations.</p>
-            <ul>${textList(c.domainGuide)}</ul>
+            <ul>${detailList(c.domainGuide)}</ul>
           </article>
           <article id="zinx">
             <h2>About ZINX</h2>
             <p>ZISPA operates the Zimbabwe Internet Exchange, enabling local Internet Service Providers to exchange traffic directly.</p>
-            <ul>${textList(c.policies)}</ul>
+            <ul>${detailList(c.policies)}</ul>
           </article>
         </section>
       </main>
@@ -333,12 +644,22 @@
       <footer class="ss-footer" id="agm">
         <span>Copyright ZISPA 2016-${new Date().getFullYear()}</span>
         <nav aria-label="Footer navigation">
-          <a href="#domain-guide">Terms & Conditions</a>
-          <a href="#policies">Privacy Policy</a>
+          <button class="ss-footer-link" type="button" data-drawer="terms">Terms & Conditions</button>
+          <button class="ss-footer-link" type="button" data-drawer="privacy">Privacy Policy</button>
           <a href="#home">Sitemap</a>
         </nav>
         <span class="ss-zim">Proudly serving the Zimbabwe Internet community.</span>
       </footer>
+
+      <div class="ss-drawer-backdrop" data-drawer-close hidden></div>
+      <aside class="ss-drawer" role="complementary" aria-hidden="true" aria-labelledby="ss-drawer-title">
+        <button class="ss-drawer-close" type="button" data-drawer-close aria-label="Close drawer">
+          ${icon("close")}
+        </button>
+        <p class="ss-drawer-eyebrow" id="ss-drawer-eyebrow">ZISPA</p>
+        <h2 id="ss-drawer-title"></h2>
+        <div class="ss-drawer-body" id="ss-drawer-body"></div>
+      </aside>
     `;
   }
 
@@ -446,11 +767,68 @@
     }
   }
 
+  function openDrawer(root, topicId, opener) {
+    const topic = CONTENT.drawerTopics[topicId];
+    const drawer = root.querySelector(".ss-drawer");
+    const backdrop = root.querySelector(".ss-drawer-backdrop");
+    const eyebrow = root.querySelector("#ss-drawer-eyebrow");
+    const title = root.querySelector("#ss-drawer-title");
+    const body = root.querySelector("#ss-drawer-body");
+    const closeButton = root.querySelector(".ss-drawer-close");
+    if (!topic || !drawer || !backdrop || !eyebrow || !title || !body) return;
+
+    lastDrawerOpener = opener instanceof HTMLElement ? opener : null;
+    eyebrow.textContent = topic.eyebrow || CONTENT.acronym;
+    title.textContent = topic.title;
+    body.innerHTML = drawerBody(topic);
+    backdrop.hidden = false;
+    root.classList.add("is-drawer-open");
+    drawer.classList.add("is-open");
+    drawer.setAttribute("aria-hidden", "false");
+    closeButton?.focus({ preventScroll: true });
+  }
+
+  function closeDrawer(root) {
+    const drawer = root.querySelector(".ss-drawer");
+    const backdrop = root.querySelector(".ss-drawer-backdrop");
+    if (!drawer || !backdrop || !root.classList.contains("is-drawer-open")) return;
+
+    root.classList.remove("is-drawer-open");
+    drawer.classList.remove("is-open");
+    drawer.setAttribute("aria-hidden", "true");
+    backdrop.hidden = true;
+    if (lastDrawerOpener?.isConnected) {
+      lastDrawerOpener.focus({ preventScroll: true });
+    }
+    lastDrawerOpener = null;
+  }
+
   function wire(root) {
     const form = root.querySelector("#ss-domain-form");
     form?.addEventListener("submit", (event) => {
       event.preventDefault();
       checkDomain(root.querySelector("#ss-domain")?.value);
+    });
+
+    root.addEventListener("click", (event) => {
+      const drawerTrigger = event.target.closest("[data-drawer]");
+      if (drawerTrigger && root.contains(drawerTrigger)) {
+        event.preventDefault();
+        openDrawer(root, drawerTrigger.dataset.drawer, drawerTrigger);
+        return;
+      }
+
+      const closeTrigger = event.target.closest("[data-drawer-close]");
+      if (closeTrigger && root.contains(closeTrigger)) {
+        event.preventDefault();
+        closeDrawer(root);
+      }
+    });
+
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeDrawer(root);
+      }
     });
   }
 
