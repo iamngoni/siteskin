@@ -11,11 +11,12 @@ export const CONFIG = {
   // Remote pack library. Points at this repo's raw content by default; swap for
   // a CDN / your own host later. Whatever lives here must mirror the layout of
   // the bundled `packs/` directory (an index.json plus one folder per pack).
-  remoteBase: "https://raw.githubusercontent.com/iamngoni/siteskin/master/packs",
+  remoteBase:
+    "https://raw.githubusercontent.com/iamngoni/siteskin/master/packs",
 
   // Bundled fallback, resolved relative to the extension root at runtime.
   bundledBase: "packs",
 
   // How often the background worker re-pulls the pack library.
-  refreshIntervalMinutes: 60
+  refreshIntervalMinutes: 60,
 };
