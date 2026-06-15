@@ -46,21 +46,49 @@ async function fetchJson(url) {
   return JSON.parse(await fetchText(url));
 }
 
+async function resolveGithubCommitBase() {
+  const apiUrl = `https://api.github.com/repos/${CONFIG.remoteRepo}/commits/${CONFIG.remoteRef}`;
+  const commit = await fetchJson(apiUrl);
+  const sha = commit?.sha;
+  if (!/^[a-f0-9]{40}$/i.test(sha || "")) {
+    throw new Error(`Invalid GitHub commit response for ${CONFIG.remoteRef}`);
+  }
+  return {
+    source: "remote",
+    base: `https://raw.githubusercontent.com/${CONFIG.remoteRepo}/${sha}/${CONFIG.remotePath}`,
+    revision: sha
+  };
+}
+
+async function resolveRemoteIndex() {
+  try {
+    const resolved = await resolveGithubCommitBase();
+    const index = await fetchJson(`${resolved.base}/index.json`);
+    return { ...resolved, index };
+  } catch (_e) {
+    const index = await fetchJson(`${CONFIG.remoteBase}/index.json`);
+    return { source: "remote", base: CONFIG.remoteBase, index };
+  }
+}
+
+async function resolveBundledIndex() {
+  const base = chrome.runtime.getURL(CONFIG.bundledBase);
+  const index = await fetchJson(`${base}/index.json`);
+  return { source: "bundled", base, index };
+}
+
 // Resolve the pack index from remote, falling back to the bundled copy.
 async function resolveIndex() {
   try {
-    const index = await fetchJson(`${CONFIG.remoteBase}/index.json`);
-    return { source: "remote", base: CONFIG.remoteBase, index };
+    return await resolveRemoteIndex();
   } catch (_e) {
-    const base = chrome.runtime.getURL(CONFIG.bundledBase);
-    const index = await fetchJson(`${base}/index.json`);
-    return { source: "bundled", base, index };
+    return resolveBundledIndex();
   }
 }
 
 // Load every pack's assets (CSS + JS text) from the resolved source.
 async function loadPacks() {
-  const { source, base, index } = await resolveIndex();
+  const { source, base, index, revision } = await resolveIndex();
   const packs = [];
   for (const p of index.packs || []) {
     try {
@@ -79,7 +107,7 @@ async function loadPacks() {
       console.warn("[SiteSkin] failed to load pack", p.dir, e);
     }
   }
-  return { source, packs };
+  return { source, packs, revision };
 }
 
 // --- registration ---------------------------------------------------------
@@ -130,13 +158,14 @@ async function applyPacks(packs) {
 // --- sync orchestration ---------------------------------------------------
 async function syncPacks() {
   try {
-    const { source, packs } = await loadPacks();
+    const { source, packs, revision } = await loadPacks();
     await chrome.storage.local.set({
-      library: { source, packs, lastSync: Date.now() },
+      library: { source, packs, revision, lastSync: Date.now() },
     });
     await applyPacks(packs);
     await setStatus({
       source,
+      revision,
       packCount: packs.length,
       lastSync: Date.now(),
       error: null,

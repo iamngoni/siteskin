@@ -505,29 +505,31 @@
 
   function mapGraphic() {
     return `
-      <svg class="ss-map" viewBox="0 0 520 360" role="img" aria-label="Network map of Zimbabwe">
-        <path class="ss-map-outline" d="M86 148 126 111l61-4 42-45 70 18 62-12 50 41 54 8 24 53-27 48 12 56-57 26-41 34-80-5-48 25-57-36-72 6-29-50-57-16 31-62z"/>
+      <svg class="ss-map" viewBox="70 0 430 360" role="img" aria-label="Network map of Zimbabwe">
+        <title>Zimbabwe network map</title>
+        <path class="ss-map-outline" d="M355.9 331.1 L332 326.6 L316.9 332 L295.1 324.4 L276.9 323.9 L248.2 303.6 L213.5 296.7 L200.2 268.2 L200.1 252.3 L180.9 247.5 L130 198.1 L115.9 172.1 L106.8 164.1 L89.5 128.2 L139.8 133.1 L154.4 138.3 L169.5 137.2 L194.4 108.1 L233.5 71.2 L249.6 67.6 L255.1 52.1 L280.7 34.2 L314.7 28 L317.6 44.8 L355.1 43.9 L375.9 53.4 L385.6 64.5 L407 67.7 L430.4 82.2 L430.5 139.1 L421.7 170.2 L419.8 203.8 L427 217.1 L421.9 243.6 L415.1 247.7 L403.3 280.1 L355.9 331.1 Z"/>
         <g class="ss-map-lines">
-          <path d="M126 175 194 142 246 185 306 118 386 154 425 225 350 270 286 225 202 256 126 175z"/>
-          <path d="M194 142 202 256 286 225 306 118 350 270 425 225"/>
-          <path d="M246 185 386 154 286 225 126 175"/>
+          <path d="M115 136.6 240.6 235.9 294.1 205.2 294.1 181.7 349.7 132.3"/>
+          <path d="M240.6 235.9 339.6 233.2 302.1 329.5"/>
+          <path d="M349.7 132.3 421.5 183.6 339.6 233.2 294.1 205.2"/>
+          <path d="M311.4 111.5 349.7 132.3 294.1 181.7"/>
         </g>
         <g class="ss-map-nodes">
-          <circle cx="126" cy="175" r="7"/>
-          <circle cx="194" cy="142" r="7"/>
-          <circle cx="246" cy="185" r="7"/>
-          <circle cx="306" cy="118" r="7"/>
-          <circle cx="386" cy="154" r="7"/>
-          <circle cx="425" cy="225" r="7"/>
-          <circle cx="350" cy="270" r="7"/>
-          <circle cx="286" cy="225" r="9"/>
-          <circle cx="202" cy="256" r="7"/>
+          <circle cx="115" cy="136.6" r="7"/>
+          <circle cx="240.6" cy="235.9" r="7"/>
+          <circle cx="294.1" cy="205.2" r="7"/>
+          <circle cx="294.1" cy="181.7" r="7"/>
+          <circle cx="311.4" cy="111.5" r="7"/>
+          <circle cx="349.7" cy="132.3" r="9"/>
+          <circle cx="421.5" cy="183.6" r="7"/>
+          <circle cx="339.6" cy="233.2" r="7"/>
+          <circle cx="302.1" cy="329.5" r="7"/>
         </g>
         <g class="ss-map-dots">
-          <circle cx="414" cy="86" r="3"/>
-          <circle cx="446" cy="96" r="3"/>
-          <circle cx="468" cy="132" r="3"/>
-          <circle cx="476" cy="182" r="3"/>
+          <circle cx="454" cy="122" r="3"/>
+          <circle cx="468" cy="148" r="3"/>
+          <circle cx="444" cy="192" r="3"/>
+          <circle cx="398" cy="102" r="3"/>
         </g>
       </svg>
     `;

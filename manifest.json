@@ -8,6 +8,7 @@
   "host_permissions": [
     "*://zispa.org.zw/*",
     "*://www.zispa.org.zw/*",
+    "https://api.github.com/*",
     "https://raw.githubusercontent.com/*"
   ],
   "background": {

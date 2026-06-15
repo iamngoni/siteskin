@@ -13,8 +13,9 @@ shipping a new extension version.
 
 ```
 Background service worker (bundled)
-  ├─ fetch pack index + assets from remote source  → cache in chrome.storage
-  │     (falls back to the bundled packs/ copy when offline)
+  ├─ resolve GitHub branch → commit SHA
+  ├─ fetch pack index + assets from raw commit URL  → cache in chrome.storage
+  │     (falls back to raw branch URL, then bundled packs/ when offline)
   └─ chrome.userScripts.register({ matches, css+js })   ← per host
         ↓
    user visits a matched host  →  pack runs in-page  →  full reskin
@@ -33,6 +34,10 @@ The one cost is a one-time user opt-in (see Install).
 | `src/popup/` | Status: user-scripts enabled? packs loaded? skin active here? |
 | `packs/index.json` | The pack library manifest (host → pack mapping). |
 | `packs/<host>/` | A pack: `styles.css`, `script.js`, `pack.json`. |
+
+The runtime resolves `master` through the GitHub commits API before fetching
+pack files. That avoids the short-lived `raw.githubusercontent.com/master/...`
+edge-cache lag where a just-pushed branch can still serve the previous pack.
 
 ## Install (development)
 

@@ -8,6 +8,11 @@
  * paint never depends on the network.
  */
 export const CONFIG = {
+  // GitHub source used to resolve the mutable branch to an immutable commit.
+  remoteRepo: "iamngoni/siteskin",
+  remoteRef: "master",
+  remotePath: "packs",
+
   // Remote pack library. Points at this repo's raw content by default; swap for
   // a CDN / your own host later. Whatever lives here must mirror the layout of
   // the bundled `packs/` directory (an index.json plus one folder per pack).

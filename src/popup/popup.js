@@ -24,6 +24,14 @@ const ago = (ts) => {
   return `${Math.floor(s / 86400)}d ago`;
 };
 
+const sourceLabel = (status) => {
+  if (!status.source) return "—";
+  if (status.revision && status.source === "remote") {
+    return `${status.source} ${status.revision.slice(0, 7)}`;
+  }
+  return status.source;
+};
+
 async function currentHost() {
   const [tab] = await chrome.tabs
     .query({ active: true, currentWindow: true })
@@ -59,7 +67,7 @@ function render(status, host, pack) {
 
   // Library meta
   $("pack-count").textContent = status.packCount ?? "—";
-  $("source").textContent = status.source ?? "—";
+  $("source").textContent = sourceLabel(status);
   $("updated").textContent = ago(status.lastSync);
 
   const err = $("err");
