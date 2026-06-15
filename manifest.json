@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "SiteSkin",
+  "version": "0.1.0",
+  "description": "Inject modern UI 'skins' (CSS + JS) into websites on a per-host basis.",
+  "action": {
+    "default_title": "SiteSkin",
+    "default_popup": "src/popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["sites/registry.js", "src/loader.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sites/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
