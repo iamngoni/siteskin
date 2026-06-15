@@ -1,51 +1,118 @@
 /**
  * SiteSkin popup.
  *
- * Asks the active tab's loader for its status and renders whether a pack is
- * applied to the current host.
+ * Reads status from the background worker and reports: whether user scripts are
+ * enabled, how many packs are loaded and from where, and whether the current
+ * tab's host has a matching pack. Offers a manual refresh.
  */
-(async () => {
-  const statusEl = document.getElementById("status");
-  const statusLine = document.getElementById("status-line");
-  const hostLine = document.getElementById("host-line");
+const $ = (id) => document.getElementById(id);
 
-  const render = ({ active, name, host }) => {
-    statusEl.classList.remove("loading");
-    statusEl.classList.toggle("active", Boolean(active));
-    if (active) {
-      statusLine.textContent = `Skin active: ${name}`;
-      hostLine.textContent = host;
-    } else {
-      statusLine.textContent = "No skin for this site";
-      hostLine.textContent = host || "";
-    }
-  };
-
+const hostOf = (url) => {
   try {
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    });
-    if (!tab || !tab.id) throw new Error("no tab");
+    return new URL(url).hostname;
+  } catch {
+    return "";
+  }
+};
 
-    const res = await chrome.tabs.sendMessage(tab.id, {
-      type: "SITESKIN_STATUS"
-    });
-    render(res || { active: false, host: hostOf(tab.url) });
-  } catch (_e) {
-    // Loader not present on this page (e.g. chrome:// pages, or page not yet
-    // loaded). Treat as no skin.
-    const [tab] = await chrome.tabs
-      .query({ active: true, currentWindow: true })
-      .catch(() => [null]);
-    render({ active: false, host: tab ? hostOf(tab.url) : "" });
+const ago = (ts) => {
+  if (!ts) return "—";
+  const s = Math.round((Date.now() - ts) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+};
+
+async function currentHost() {
+  const [tab] = await chrome.tabs
+    .query({ active: true, currentWindow: true })
+    .catch(() => [null]);
+  return hostOf(tab?.url);
+}
+
+async function matchedPack(host) {
+  const lib = (await chrome.storage.local.get("library")).library;
+  return lib?.packs?.find((p) => p.match.includes(host)) || null;
+}
+
+function render(status, host, pack) {
+  $("loading").hidden = true;
+  const enableCard = $("enable");
+  const statusCard = $("status");
+
+  if (status.userScriptsEnabled === false) {
+    enableCard.hidden = false;
+    statusCard.hidden = true;
+    return;
+  }
+  enableCard.hidden = true;
+  statusCard.hidden = false;
+
+  // Per-tab match
+  const active = Boolean(pack);
+  $("tab-dot").classList.toggle("active", active);
+  $("tab-line").textContent = active
+    ? `Skin active: ${pack.name}`
+    : "No skin for this site";
+  $("host-line").textContent = host || "";
+
+  // Library meta
+  $("pack-count").textContent = status.packCount ?? "—";
+  $("source").textContent = status.source ?? "—";
+  $("updated").textContent = ago(status.lastSync);
+
+  const err = $("err");
+  if (status.error) {
+    err.hidden = false;
+    err.textContent = status.error;
+  } else {
+    err.hidden = true;
+  }
+}
+
+async function refreshView(status) {
+  const host = await currentHost();
+  const pack = await matchedPack(host);
+  render(status, host, pack);
+}
+
+function renderPopupError(error) {
+  $("loading").hidden = true;
+  $("enable").hidden = true;
+  $("status").hidden = false;
+  $("tab-dot").classList.remove("active");
+  $("tab-line").textContent = "SiteSkin status unavailable";
+  $("host-line").textContent = "";
+  $("pack-count").textContent = "—";
+  $("source").textContent = "—";
+  $("updated").textContent = "—";
+  $("err").hidden = false;
+  $("err").textContent = String(error?.message || error || "Unknown error");
+}
+
+(async () => {
+  try {
+    const status = await chrome.runtime.sendMessage({ type: "GET_STATUS" });
+    await refreshView(status || {});
+  } catch (error) {
+    renderPopupError(error);
   }
 
-  function hostOf(url) {
+  $("refresh").addEventListener("click", async () => {
+    const btn = $("refresh");
+    btn.disabled = true;
+    btn.classList.add("syncing");
+    btn.textContent = "Refreshing…";
     try {
-      return new URL(url).hostname;
-    } catch {
-      return "";
+      const updated = await chrome.runtime.sendMessage({ type: "SYNC" });
+      await refreshView(updated || {});
+    } catch (error) {
+      renderPopupError(error);
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove("syncing");
+      btn.textContent = "Refresh packs";
     }
-  }
+  });
 })();

@@ -11,13 +11,45 @@
       <span class="logo">◑</span>
       <h1>SiteSkin</h1>
     </header>
-    <section id="status" class="status loading">
-      <span class="dot"></span>
-      <div>
-        <p id="status-line">Checking this page…</p>
-        <p id="host-line" class="muted"></p>
+
+    <section id="loading" class="card">
+      <div class="row">
+        <span class="spinner" aria-hidden="true"></span>
+        <div>
+          <p class="title">Checking SiteSkin…</p>
+          <p class="muted">Reading the active tab and pack cache.</p>
+        </div>
       </div>
     </section>
+
+    <!-- Shown when the user hasn't enabled the user-scripts toggle yet. -->
+    <section id="enable" class="card warn" hidden>
+      <p class="title">Enable user scripts to activate skins</p>
+      <ol>
+        <li>Open <code>chrome://extensions</code></li>
+        <li>Open <strong>SiteSkin</strong> → Details</li>
+        <li>Turn on <strong>Allow user scripts</strong></li>
+      </ol>
+    </section>
+
+    <!-- Normal status. -->
+    <section id="status" class="card" hidden>
+      <div class="row">
+        <span class="dot" id="tab-dot"></span>
+        <div>
+          <p class="title" id="tab-line">Checking this page…</p>
+          <p class="muted" id="host-line"></p>
+        </div>
+      </div>
+      <dl class="meta">
+        <div><dt>Packs</dt><dd id="pack-count">—</dd></div>
+        <div><dt>Source</dt><dd id="source">—</dd></div>
+        <div><dt>Updated</dt><dd id="updated">—</dd></div>
+      </dl>
+      <button id="refresh">Refresh packs</button>
+      <p class="err" id="err" hidden></p>
+    </section>
+
     <script src="popup.js"></script>
   </body>
 </html>

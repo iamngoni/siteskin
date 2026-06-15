@@ -2,23 +2,20 @@
   "manifest_version": 3,
   "name": "SiteSkin",
   "version": "0.1.0",
-  "description": "Inject modern UI 'skins' (CSS + JS) into websites on a per-host basis.",
+  "minimum_chrome_version": "120",
+  "description": "Modern reskins for unmaintained websites, delivered as remotely-updatable packs.",
+  "permissions": ["userScripts", "storage", "alarms", "tabs"],
+  "host_permissions": [
+    "*://zispa.org.zw/*",
+    "*://www.zispa.org.zw/*",
+    "https://raw.githubusercontent.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
   "action": {
     "default_title": "SiteSkin",
     "default_popup": "src/popup/popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["sites/registry.js", "src/loader.js"],
-      "run_at": "document_start",
-      "all_frames": false
-    }
-  ],
-  "web_accessible_resources": [
-    {
-      "resources": ["sites/*"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }

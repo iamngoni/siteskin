@@ -1,70 +1,80 @@
 # SiteSkin
 
-A browser extension that injects modern UI "skins" — bundles of CSS + JS — into
-specific websites, on a per-host basis. Think of it as a library of **website
-upgrade packs**: drop in a folder, register a hostname, and that site gets
-reskinned every time you visit.
+A browser extension that delivers **full modern reskins** of unmaintained
+websites as remotely-updatable packs. Built for old, un-modernised org sites
+(its first target is [ZISPA](https://www.zispa.org.zw), Zimbabwe's `.co.zw`
+registry).
+
+The extension is a thin runtime; the reskins live in a **pack library** that is
+fetched from a remote source and cached, so a skin can be updated without
+shipping a new extension version.
+
+## Architecture
 
 ```
-Extension core
-  ↓ detect current hostname
-  ↓ look up matching pack in the registry
-  ↓ inject the pack's CSS (<link>) + JS (<script> in page world)
+Background service worker (bundled)
+  ├─ fetch pack index + assets from remote source  → cache in chrome.storage
+  │     (falls back to the bundled packs/ copy when offline)
+  └─ chrome.userScripts.register({ matches, css+js })   ← per host
+        ↓
+   user visits a matched host  →  pack runs in-page  →  full reskin
 ```
 
-## How it works
+Why `chrome.userScripts`: under Manifest V3 it is the **sanctioned** way to run
+code that isn't part of the extension bundle — which is exactly what lets
+reskins be fetched and updated remotely while staying Chrome Web Store eligible.
+The one cost is a one-time user opt-in (see Install).
 
 | Piece | Role |
 |-------|------|
-| `manifest.json` | MV3 config. Registers the loader on all pages and exposes `sites/*` as web-accessible resources. |
-| `sites/registry.js` | Maps `hostname → pack`. The one place you edit to enable a site. |
-| `src/loader.js` | Content script. Reads `location.hostname`, finds a pack, injects its CSS + JS. Answers the popup's status query. |
-| `sites/<host>/` | A self-contained pack: `styles.css`, `script.js`, `pack.json` (metadata). |
-| `src/popup/` | Toolbar popup showing whether a skin is active on the current tab. |
-
-CSS is injected as a `<link>` so it joins the page's cascade. JS is injected as
-a `<script src>` so it runs in the **page world** with direct access to the
-site's own DOM.
+| `manifest.json` | MV3 config: `userScripts` + background worker + popup. |
+| `src/config.js` | Remote pack source URL, cache/refresh settings. |
+| `src/background.js` | Fetch → cache → register packs; status + manual refresh. |
+| `src/popup/` | Status: user-scripts enabled? packs loaded? skin active here? |
+| `packs/index.json` | The pack library manifest (host → pack mapping). |
+| `packs/<host>/` | A pack: `styles.css`, `script.js`, `pack.json`. |
 
 ## Install (development)
 
-1. Open `chrome://extensions` (or `edge://extensions`).
-2. Enable **Developer mode**.
-3. Click **Load unpacked** and select this folder.
-4. Visit a registered site (e.g. `www.zispa.org.zw`). A small "SiteSkin" badge
-   appears bottom-right when a skin is live; the toolbar popup confirms status.
+1. Open `chrome://extensions`, enable **Developer mode**.
+2. **Load unpacked** → select this folder.
+3. Open **SiteSkin → Details** and turn on **Allow user scripts**.
+   *(This is the one-time opt-in the `userScripts` API requires. The popup will
+   prompt you until it's on.)*
+4. Visit `https://www.zispa.org.zw` — it renders the modern reskin.
+
+## How a reskin works
+
+A pack's `script.js` runs at `document_start` in the userScripts world. It
+builds a complete modern page inside `#siteskin-root`; the pack's `styles.css`
+hides the original DOM (`body > *:not(#siteskin-root)`), so the page is
+**replaced**, not themed. Page content is baked into the pack (these sites are
+static), which is the most robust source.
 
 ## Add a new skin
 
-1. Create a folder: `sites/example.com/`
-2. Add `styles.css`, `script.js`, and `pack.json`:
+1. Create `packs/example.com/` with `styles.css`, `script.js`, `pack.json`.
+2. Add an entry to `packs/index.json`:
    ```json
    {
      "name": "Example Modern",
-     "host": "www.example.com",
+     "dir": "example.com",
+     "match": ["example.com", "www.example.com"],
      "version": "1.0.0",
-     "description": "Modernized UI for example.com"
+     "css": "styles.css",
+     "js": "script.js"
    }
    ```
-3. Register the host(s) in `sites/registry.js`:
-   ```js
-   "www.example.com": {
-     name: "Example Modern",
-     dir: "sites/example.com",
-     css: "sites/example.com/styles.css",
-     js: "sites/example.com/script.js"
-   }
-   ```
-4. Reload the extension. Done — no core changes needed.
+3. Push to the remote source (or reload the unpacked extension to use the
+   bundled copy). The popup's **Refresh packs** re-pulls immediately.
 
-## Notes & next steps
+> Hosts must also be covered by `host_permissions` in `manifest.json`. Adding a
+> brand-new host currently needs a manifest bump; broadening to optional host
+> permissions (to add hosts purely remotely) is a deliberate next step.
 
-- **Matching is exact on `hostname`.** List every host a site uses (e.g. both
-  `example.com` and `www.example.com`).
-- **Idempotency:** pack `script.js` should be safe to re-run (the sample guards
-  with a `data-siteskin-enhanced` marker) for SPA navigations.
-- **Firefox:** MV3 is largely compatible; `web_accessible_resources` and the
-  `<script src>` injection work, but test before shipping.
-- Potential future work: a build step that auto-generates `registry.js` from
-  `pack.json` files, per-pack enable/disable toggles in the popup, and
-  user-authored packs stored in `chrome.storage`.
+## Known TODOs
+
+- Confirm whether ZISPA wants real section URLs or the current in-page anchors
+  for Home, Domains, Members, ZINX, and AGM.
+- Per-pack enable/disable toggles in the popup.
+- Optional host permissions so new hosts don't require an extension update.

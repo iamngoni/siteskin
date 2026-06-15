@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "packs": [
+    {
+      "name": "ZISPA Modern",
+      "dir": "zispa.org.zw",
+      "match": ["zispa.org.zw", "www.zispa.org.zw"],
+      "version": "1.0.0",
+      "css": "styles.css",
+      "js": "script.js"
+    }
+  ]
+}

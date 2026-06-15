@@ -1,0 +1,8 @@
+{
+  "name": "ZISPA Modern",
+  "host": "www.zispa.org.zw",
+  "version": "1.0.0",
+  "description": "Full modern reskin of the Zimbabwe Internet Service Providers Association website.",
+  "author": "SiteSkin",
+  "notes": "Content is baked from the live site. Domain lookup posts to /cgi-bin/domain_lookup.pl. TODO: confirm whether nav should use real section URLs or in-page anchors."
+}
