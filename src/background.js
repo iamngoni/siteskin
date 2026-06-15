@@ -27,6 +27,28 @@ function userScriptsApi() {
   }
 }
 
+function errorText(error) {
+  return String(error?.message || error || "Unknown error");
+}
+
+async function markUserScriptsUnavailable(error) {
+  await setStatus({
+    userScriptsEnabled: false,
+    userScriptsError: error ? errorText(error) : "Allow user scripts is not enabled",
+    error: null,
+  });
+}
+
+async function verifyUserScriptsAccess(us) {
+  try {
+    await us.getScripts();
+    return true;
+  } catch (e) {
+    await markUserScriptsUnavailable(e);
+    return false;
+  }
+}
+
 // --- status (read by the popup) ------------------------------------------
 async function getStatus() {
   return (await chrome.storage.local.get("status")).status || {};
@@ -127,17 +149,21 @@ function cssInjector(pack) {
 async function applyPacks(packs) {
   const us = userScriptsApi();
   if (!us) {
-    await setStatus({ userScriptsEnabled: false });
-    return;
+    await markUserScriptsUnavailable();
+    return false;
   }
-  await setStatus({ userScriptsEnabled: true });
+
+  if (!(await verifyUserScriptsAccess(us))) return false;
 
   try {
     await us.unregister(); // clear our previous registrations
   } catch (_e) {
     /* nothing registered yet */
   }
-  if (!packs.length) return;
+  if (!packs.length) {
+    await setStatus({ userScriptsEnabled: true, userScriptsError: null, error: null });
+    return true;
+  }
 
   const regs = packs.map((p) => ({
     id: `siteskin-${p.dir}`,
@@ -150,8 +176,15 @@ async function applyPacks(packs) {
 
   try {
     await us.register(regs);
+    await setStatus({ userScriptsEnabled: true, userScriptsError: null, error: null });
+    return true;
   } catch (e) {
-    await setStatus({ userScriptsEnabled: false, error: String(e) });
+    await setStatus({
+      userScriptsEnabled: true,
+      userScriptsError: null,
+      error: errorText(e),
+    });
+    return false;
   }
 }
 
@@ -168,10 +201,9 @@ async function syncPacks() {
       revision,
       packCount: packs.length,
       lastSync: Date.now(),
-      error: null,
     });
   } catch (e) {
-    await setStatus({ error: String(e) });
+    await setStatus({ error: errorText(e) });
   }
 }
 
@@ -189,7 +221,7 @@ async function init() {
 async function ensureRegistered() {
   const us = userScriptsApi();
   if (!us) {
-    await setStatus({ userScriptsEnabled: false });
+    await markUserScriptsUnavailable();
     return;
   }
   const lib = (await chrome.storage.local.get("library")).library;
@@ -197,11 +229,12 @@ async function ensureRegistered() {
     let existing = [];
     try {
       existing = await us.getScripts();
-    } catch (_e) {
-      /* treat as none */
+    } catch (e) {
+      await markUserScriptsUnavailable(e);
+      return;
     }
     if (!existing.length) await applyPacks(lib.packs);
-    else await setStatus({ userScriptsEnabled: true });
+    else await setStatus({ userScriptsEnabled: true, userScriptsError: null });
   } else {
     // No cache yet (e.g. toggle was off during the very first sync) — pull now.
     await syncPacks();

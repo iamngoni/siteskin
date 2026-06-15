@@ -32,6 +32,19 @@ const sourceLabel = (status) => {
   return status.source;
 };
 
+const userScriptsAccessIssue = (value) => {
+  const text = String(value || "");
+  return (
+    /allow user scripts|developer mode/i.test(text) ||
+    (/user.?scripts/i.test(text) && /not enabled|not available|enable/i.test(text))
+  );
+};
+
+const needsUserScriptsEnable = (status = {}) =>
+  status.userScriptsEnabled === false ||
+  userScriptsAccessIssue(status.userScriptsError) ||
+  userScriptsAccessIssue(status.error);
+
 async function currentHost() {
   const [tab] = await chrome.tabs
     .query({ active: true, currentWindow: true })
@@ -49,7 +62,7 @@ function render(status, host, pack) {
   const enableCard = $("enable");
   const statusCard = $("status");
 
-  if (status.userScriptsEnabled === false) {
+  if (needsUserScriptsEnable(status)) {
     enableCard.hidden = false;
     statusCard.hidden = true;
     return;
@@ -87,6 +100,11 @@ async function refreshView(status) {
 
 function renderPopupError(error) {
   $("loading").hidden = true;
+  if (userScriptsAccessIssue(error?.message || error)) {
+    $("enable").hidden = false;
+    $("status").hidden = true;
+    return;
+  }
   $("enable").hidden = true;
   $("status").hidden = false;
   $("tab-dot").classList.remove("active");
