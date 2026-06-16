@@ -65,6 +65,7 @@ static), which is the most robust source.
      "name": "Example Modern",
      "dir": "example.com",
      "match": ["example.com", "www.example.com"],
+     "paths": ["/", "/downloads*", "/help*"],
      "version": "1.0.0",
      "css": "styles.css",
      "js": "script.js"
@@ -72,6 +73,10 @@ static), which is the most robust source.
    ```
 3. Push to the remote source (or reload the unpacked extension to use the
    bundled copy). The popup's **Refresh packs** re-pulls immediately.
+
+`match` is a host list. `paths` is optional and defaults to `["/*"]`; use it
+when a pack should support specific sections rather than only one main page.
+Advanced packs can also provide Chrome match patterns directly via `matches`.
 
 > Hosts must also be covered by `host_permissions` in `manifest.json`. Adding a
 > brand-new host currently needs a manifest bump; broadening to optional host

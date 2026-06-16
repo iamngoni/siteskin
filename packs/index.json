@@ -5,7 +5,34 @@
       "name": "ZISPA Modern",
       "dir": "zispa.org.zw",
       "match": ["zispa.org.zw", "www.zispa.org.zw"],
+      "paths": ["/*"],
       "version": "1.0.0",
+      "css": "styles.css",
+      "js": "script.js"
+    },
+    {
+      "name": "ZIMRA Service Hub",
+      "dir": "zimra.co.zw",
+      "match": ["zimra.co.zw", "www.zimra.co.zw"],
+      "paths": [
+        "/",
+        "/downloads*",
+        "/domestic-taxes/tax-tables*",
+        "/public-notices*",
+        "/tenders*",
+        "/frequently-asked-questions*",
+        "/contact-us*"
+      ],
+      "version": "0.1.0",
+      "css": "styles.css",
+      "js": "script.js"
+    },
+    {
+      "name": "Zimbabwe Government Services",
+      "dir": "zim.gov.zw",
+      "match": ["zim.gov.zw", "www.zim.gov.zw"],
+      "paths": ["/*"],
+      "version": "0.1.0",
       "css": "styles.css",
       "js": "script.js"
     }

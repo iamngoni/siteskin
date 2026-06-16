@@ -15,6 +15,40 @@ const hostOf = (url) => {
   }
 };
 
+const locationOf = (url) => {
+  try {
+    return new URL(url);
+  } catch {
+    return null;
+  }
+};
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const globToRegExp = (glob) =>
+  new RegExp(`^${String(glob || "*").split("*").map(escapeRegExp).join(".*")}$`);
+
+const chromeMatchMatchesUrl = (pattern, url) => {
+  const location = locationOf(url);
+  if (!location) return false;
+
+  const match = String(pattern || "").match(/^(\*|https?|file):\/\/([^/]+)(\/.*)$/);
+  if (!match) return false;
+
+  const [, scheme, hostPattern, pathPattern] = match;
+  const pageScheme = location.protocol.replace(":", "");
+  if (scheme !== "*" && scheme !== pageScheme) return false;
+
+  const host = location.hostname;
+  const hostMatches =
+    hostPattern === "*" ||
+    hostPattern === host ||
+    (hostPattern.startsWith("*.") &&
+      (host === hostPattern.slice(2) || host.endsWith(hostPattern.slice(1))));
+
+  return hostMatches && globToRegExp(pathPattern).test(location.pathname);
+};
+
 const ago = (ts) => {
   if (!ts) return "—";
   const s = Math.round((Date.now() - ts) / 1000);
@@ -45,16 +79,22 @@ const needsUserScriptsEnable = (status = {}) =>
   userScriptsAccessIssue(status.userScriptsError) ||
   userScriptsAccessIssue(status.error);
 
-async function currentHost() {
+async function currentUrl() {
   const [tab] = await chrome.tabs
     .query({ active: true, currentWindow: true })
     .catch(() => [null]);
-  return hostOf(tab?.url);
+  return tab?.url || "";
 }
 
-async function matchedPack(host) {
+async function matchedPack(url) {
+  const host = hostOf(url);
   const lib = (await chrome.storage.local.get("library")).library;
-  return lib?.packs?.find((p) => p.match.includes(host)) || null;
+  return (
+    lib?.packs?.find((p) => {
+      if (p.matches?.some((pattern) => chromeMatchMatchesUrl(pattern, url))) return true;
+      return p.match?.includes(host);
+    }) || null
+  );
 }
 
 function render(status, host, pack) {
@@ -93,8 +133,9 @@ function render(status, host, pack) {
 }
 
 async function refreshView(status) {
-  const host = await currentHost();
-  const pack = await matchedPack(host);
+  const url = await currentUrl();
+  const host = hostOf(url);
+  const pack = await matchedPack(url);
   render(status, host, pack);
 }
 

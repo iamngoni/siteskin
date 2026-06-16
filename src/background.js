@@ -108,11 +108,41 @@ async function resolveIndex() {
   }
 }
 
+function normalizePathPattern(path) {
+  const value = String(path || "/*").trim();
+  if (!value) return "/*";
+  return value.startsWith("/") ? value : `/${value}`;
+}
+
+function packMatchesFromHosts(hosts, paths) {
+  return hosts.flatMap((host) =>
+    paths.map((path) => `*://${host}${normalizePathPattern(path)}`)
+  );
+}
+
+function normalizePackDefinition(p) {
+  const hosts = Array.isArray(p.hosts) ? p.hosts : p.match || [];
+  const paths = Array.isArray(p.paths) && p.paths.length ? p.paths : ["/*"];
+  const matches =
+    Array.isArray(p.matches) && p.matches.length
+      ? p.matches
+      : packMatchesFromHosts(hosts, paths);
+
+  return {
+    ...p,
+    hosts,
+    match: hosts,
+    paths,
+    matches,
+  };
+}
+
 // Load every pack's assets (CSS + JS text) from the resolved source.
 async function loadPacks() {
   const { source, base, index, revision } = await resolveIndex();
   const packs = [];
-  for (const p of index.packs || []) {
+  for (const rawPack of index.packs || []) {
+    const p = normalizePackDefinition(rawPack);
     try {
       const dir = `${base}/${p.dir}`;
       const cssText = p.css ? await fetchText(`${dir}/${p.css}`) : "";
@@ -121,6 +151,9 @@ async function loadPacks() {
         name: p.name,
         dir: p.dir,
         match: p.match,
+        hosts: p.hosts,
+        paths: p.paths,
+        matches: p.matches,
         version: p.version,
         cssText,
         jsText,
@@ -167,7 +200,7 @@ async function applyPacks(packs) {
 
   const regs = packs.map((p) => ({
     id: `siteskin-${p.dir}`,
-    matches: p.match.map((h) => `*://${h}/*`),
+    matches: p.matches,
     js: [{ code: cssInjector(p) }, { code: p.jsText }],
     world: "USER_SCRIPT",
     runAt: "document_start",
